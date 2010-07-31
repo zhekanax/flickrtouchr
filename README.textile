@@ -2,7 +2,7 @@ A Python script to grab all your photos from flickr and dump them into a directo
 
 Original author is "Colm MacCárthaigh":http://www.stdlib.net/~colmmacc/.
 
-Changes include tweaks to download full-size original images and improvements in handling UTF8 file and photoset names.
+Changes include tweaks to name files based on their date-taken meta-data so that the files sort chronologically and improvements in handling UTF8 file and photoset names.
 
 Run it like this:
 
