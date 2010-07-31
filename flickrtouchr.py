@@ -293,7 +293,7 @@ if __name__ == '__main__':
                     if imgurl:
                         inodes[photoid] = getphoto(imgurl, target)
                     else:
-                        print "Failed to retrieve URL for photo id " + id
+                        print "Failed to retrieve URL for photo id " + photoid
 
             # Move on the next page
             page = page + 1
