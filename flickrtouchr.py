@@ -243,8 +243,8 @@ if __name__ == '__main__':
         url += "&per_page=500"
         pages = page = 1
 
-        # Get Date-Taken and Large-size URL for each result photo
-        url  += "&extras=date_taken,url_l"
+        # Get Date-Taken and the Large/Medium/Original-size URL for each result photo
+        url  += "&extras=date_taken,url_l,url_m,url_o"
 
         while page <= pages: 
             request = url + "&page=" + str(page)
@@ -286,8 +286,14 @@ if __name__ == '__main__':
                     # woo, we have it already, use a hard-link
                     os.link(inodes[photoid], target)
                 else:
-                    # Get URL to the "Large" size of the photo
+                    # Try to save the "Large" size of the photo by default
                     imgurl = photo.getAttribute("url_l")
+                    # If "Large" doesn't exist, try "Medium" -- older photos on Flickr don't seem to have a "Large" size
+                    if imgurl == "":
+                      imgurl = photo.getAttribute("url_m")
+                    # If all else fails, fall-back to "Original"
+                    if imgurl == "":
+                      imgurl = photo.getAttribute("url_o")
 
                     # Grab image and save to local file
                     if imgurl:
