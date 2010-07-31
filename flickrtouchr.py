@@ -243,8 +243,8 @@ if __name__ == '__main__':
         url += "&per_page=500"
         pages = page = 1
 
-        # Get Date-Taken and Original-size URL for each result photo
-        url  += "&extras=date_taken,url_o"
+        # Get Date-Taken and Large-size URL for each result photo
+        url  += "&extras=date_taken,url_l"
 
         while page <= pages: 
             request = url + "&page=" + str(page)
@@ -286,8 +286,8 @@ if __name__ == '__main__':
                     # woo, we have it already, use a hard-link
                     os.link(inodes[photoid], target)
                 else:
-                    # Get URL to the "Original" size of the photo
-                    imgurl = photo.getAttribute("url_o")
+                    # Get URL to the "Large" size of the photo
+                    imgurl = photo.getAttribute("url_l")
 
                     # Grab image and save to local file
                     if imgurl:
