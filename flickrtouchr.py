@@ -153,46 +153,17 @@ def flickrsign(url, token):
 #
 # Grab the photo from the server
 #
-def getphoto(id, token, filename):
-    try:
-        # Contruct a request to find the sizes
-        url  = "http://api.flickr.com/services/rest/?method=flickr.photos.getSizes"
-        url += "&photo_id=" + id
+def getphoto(imgurl, filename):
+    # Grab the image file
+    response = urllib2.urlopen(imgurl)
+    data = response.read()
     
-        # Sign the request
-        url = flickrsign(url, token)
-    
-        # Make the request
-        response = urllib2.urlopen(url)
-        
-        # Parse the XML
-        dom = xml.dom.minidom.parse(response)
+    # Save the file!
+    fh = open(filename, "w")
+    fh.write(data)
+    fh.close()
 
-        # Get the list of sizes
-        sizes =  dom.getElementsByTagName("size")
-
-        # Grab the original if it exists
-        if (sizes[-1].getAttribute("label") == "Original"):
-          imgurl = sizes[-1].getAttribute("source")
-        else:
-          print "Failed to get original for photo id " + id
-
-
-        # Free the DOM memory
-        dom.unlink()
-
-        # Grab the image file
-        response = urllib2.urlopen(imgurl)
-        data = response.read()
-    
-        # Save the file!
-        fh = open(filename, "w")
-        fh.write(data)
-        fh.close()
-
-        return filename
-    except:
-        print "Failed to retrieve photo id " + id
+    return filename
     
 ######## Main Application ##########
 if __name__ == '__main__':
@@ -244,7 +215,6 @@ if __name__ == '__main__':
         # Build the list of photos
         url   = "http://api.flickr.com/services/rest/?method=flickr.photosets.getPhotos"
         url  += "&photoset_id=" + pid
-        url  += "&extras=date_taken"
 
         # Append to our list of urls
         urls.append( (url , dir) )
@@ -254,12 +224,10 @@ if __name__ == '__main__':
 
     # Add the photos which are not in any set
     url   = "http://api.flickr.com/services/rest/?method=flickr.photos.getNotInSet"
-    url  += "&extras=date_taken"
     urls.append( (url, "No Set") )
 
     # Add the user's Favourites
     url   = "http://api.flickr.com/services/rest/?method=flickr.favorites.getList"
-    url  += "&extras=date_taken"
     urls.append( (url, "Favourites") )
 
     # Time to get the photos
@@ -274,6 +242,9 @@ if __name__ == '__main__':
         # Get 500 results per page
         url += "&per_page=500"
         pages = page = 1
+
+        # Get Date-Taken and Original-size URL for each result photo
+        url  += "&extras=date_taken,url_o"
 
         while page <= pages: 
             request = url + "&page=" + str(page)
@@ -315,7 +286,14 @@ if __name__ == '__main__':
                     # woo, we have it already, use a hard-link
                     os.link(inodes[photoid], target)
                 else:
-                    inodes[photoid] = getphoto(photo.getAttribute("id"), config["token"], target)
+                    # Get URL to the "Original" size of the photo
+                    imgurl = photo.getAttribute("url_o")
+
+                    # Grab image and save to local file
+                    if imgurl:
+                        inodes[photoid] = getphoto(imgurl, target)
+                    else:
+                        print "Failed to retrieve URL for photo id " + id
 
             # Move on the next page
             page = page + 1
