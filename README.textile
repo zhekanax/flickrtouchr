@@ -1,6 +1,7 @@
-A Python script to grab all your photos from flickr and dump them into a directory, organized into folders by set name.
+A Python script to grab all your photos from flickr and dump them into a directory, organized into folders by set name. The filenames are named based on the combo of the photo's original date-taken and the Flickr photo ID.
 
 Original author is "Colm MacCárthaigh":http://www.stdlib.net/~colmmacc/.
+http://www.stdlib.net/~colmmacc/2008/01/21/flickrtouchrpy-keep-your-flickr-album-and-favourites-on-an-ipod-touch-or-iphone/
 
 Changes include tweaks to name files based on their date-taken meta-data so that the files sort chronologically and improvements in handling UTF8 file and photoset names.
 
