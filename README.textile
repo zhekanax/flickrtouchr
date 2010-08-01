@@ -1,4 +1,4 @@
-A Python script to grab all your photos from flickr and dump them into a directory, organized into folders by set name. The filenames are named based on the combo of the photo's original date-taken and the Flickr photo ID.
+A Python script to grab all your photos from flickr and dump them into a directory, organized into folders by set name. The filenames are named based on the combo of the photo's original date-taken and the Flickr photo ID. Save the "Large"/"Medium" sized images from Flickr for usage with syncing these images to your iPhone via iTunes, since iTunes ends-up resizing these images during sync anyways.
 
 Original author is "Colm MacCárthaigh":http://www.stdlib.net/~colmmacc/.
 http://www.stdlib.net/~colmmacc/2008/01/21/flickrtouchrpy-keep-your-flickr-album-and-favourites-on-an-ipod-touch-or-iphone/
