@@ -164,7 +164,22 @@ def getphoto(imgurl, filename):
     fh.close()
 
     return filename
-    
+
+#
+# Escape Unicode chars
+# http://stackoverflow.com/questions/3011569/how-do-i-convert-filenames-from-unicode-to-ascii
+#
+def unistrip(s):
+    if isinstance(s, str):
+        s = s.decode('utf-8')
+    chars = []
+    for i in s:
+        if ord(i) > 0x7f:
+            chars.append(u'_')
+        else:
+            chars.append(i)
+    return u''.join(chars)
+
 ######## Main Application ##########
 if __name__ == '__main__':
 
@@ -210,7 +225,8 @@ if __name__ == '__main__':
     for set in sets:
         pid = set.getAttribute("id")
         dir = getText(set.getElementsByTagName("title")[0].childNodes)
-        dir = unicodedata.normalize('NFKD', dir.decode("utf-8", "ignore")).encode('ASCII', 'ignore') # Normalize to ASCII
+        #dir = unicodedata.normalize('NFC', dir.decode("utf-8", "ignore")).encode('ASCII', 'ignore') # Normalize to ASCII
+        dir = unistrip(dir)  # Normalize to ASCII, converting Unicode chars to '_'
 
         # Build the list of photos
         url   = "http://api.flickr.com/services/rest/?method=flickr.photosets.getPhotos"
@@ -244,7 +260,7 @@ if __name__ == '__main__':
         pages = page = 1
 
         # Get Date-Taken and Original-size URL for each result photo
-        url  += "&extras=date_taken,url_o"
+        url  += "&extras=date_taken,url_o,url_l,url_m"
 
         while page <= pages: 
             request = url + "&page=" + str(page)
@@ -273,8 +289,19 @@ if __name__ == '__main__':
                 taken = photo.getAttribute("datetaken")
                 taken = taken.replace(":","").replace("-","").replace(" ","")
 
+                # Get URL to the "Original" size of the photo, 
+                # falling back to "Large" and then "Medium" if needed
+                imgurl = photo.getAttribute("url_o")
+                imgsz = '_o';
+                if imgurl == "":
+                    imgurl = photo.getAttribute("url_l")
+                    imgsz = '_l';
+                if imgurl == "":
+                    imgurl = photo.getAttribute("url_m")
+                    imgsz = '_m';
+
                 # Build the target filename
-                target = dir + "/" + taken + "-" + photoid + ".jpg"
+                target = dir + "/" + taken + "-" + photoid + imgsz + ".jpg"
 
                 # Skip files that exist
                 if os.access(target, os.R_OK):
@@ -286,14 +313,11 @@ if __name__ == '__main__':
                     # woo, we have it already, use a hard-link
                     os.link(inodes[photoid], target)
                 else:
-                    # Get URL to the "Original" size of the photo
-                    imgurl = photo.getAttribute("url_o")
-
                     # Grab image and save to local file
                     if imgurl:
                         inodes[photoid] = getphoto(imgurl, target)
                     else:
-                        print "Failed to retrieve URL for photo id " + photoid
+                        print "Failed to find URL for photo id " + photoid
 
             # Move on the next page
             page = page + 1
