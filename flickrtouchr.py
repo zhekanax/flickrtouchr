@@ -16,13 +16,13 @@
 # License:       		Apache 2.0 - http://www.apache.org/licenses/LICENSE-2.0.html
 #
 
+from hashlib import md5
 import xml.dom.minidom
 import webbrowser
 import urlparse
 import urllib2
 import unicodedata
 import cPickle
-import md5
 import sys
 import os
 
@@ -45,7 +45,9 @@ def getText(nodelist):
 def getfrob():
     # Create our signing string
     string = SHARED_SECRET + "api_key" + API_KEY + "methodflickr.auth.getFrob"
-    hash   = md5.new(string).digest().encode("hex")
+    m = md5()
+    m.update(string)
+    hash   = m.digest().encode("hex")
 
     # Formulate the request
     url    = "http://api.flickr.com/services/rest/?method=flickr.auth.getFrob"
@@ -75,7 +77,9 @@ def getfrob():
 #
 def froblogin(frob, perms):
     string = SHARED_SECRET + "api_key" + API_KEY + "frob" + frob + "perms" + perms
-    hash   = md5.new(string).digest().encode("hex")
+    m = md5()
+    m.update(string)
+    hash   = m.digest().encode("hex")
 
     # Formulate the request
     url    = "http://api.flickr.com/services/auth/?"
@@ -100,7 +104,9 @@ def froblogin(frob, perms):
 
     # Now, try and retrieve a token
     string = SHARED_SECRET + "api_key" + API_KEY + "frob" + frob + "methodflickr.auth.getToken"
-    hash   = md5.new(string).digest().encode("hex")
+    m = md5()
+    m.update(string)
+    hash   = m.digest().encode("hex")
     
     # Formulate the request
     url    = "http://api.flickr.com/services/rest/?method=flickr.auth.getToken"
@@ -142,7 +148,9 @@ def flickrsign(url, token):
     params.sort()
     for param in params:
         string += param.replace('=', '')
-    hash   = md5.new(string).digest().encode("hex")
+    m = md5()
+    m.update(string)
+    hash   = m.digest().encode("hex")
 
     # Now, append the api_key, and the api_sig args
     url += "&api_key=" + API_KEY + "&auth_token=" + token + "&api_sig=" + hash
