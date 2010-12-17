@@ -180,6 +180,29 @@ def unistrip(s):
             chars.append(i)
     return u''.join(chars)
 
+#
+# Get photo metadata from the server and save it in a "sidecar" file
+#
+def build_sidecar(photoid, photosecret, dir):
+    print "%s %s in %s" % (photoid, photosecret, dir)
+    
+    # Get metadata (description, dates, etc) for this photo
+    url = "http://api.flickr.com/services/rest/?method=flickr.photos.getInfo"
+    
+    request = url + "&photo_id=" + photoid + "&secret=" + photosecret
+    
+    # Sign the url
+    request = flickrsign(request, config["token"])
+    
+    # Make the request
+    response = urllib2.urlopen(request)
+
+    # Parse the XML
+    dom = xml.dom.minidom.parse(response)
+    
+    # ... and presumably get other information and write files
+
+
 ######## Main Application ##########
 if __name__ == '__main__':
 
@@ -225,8 +248,9 @@ if __name__ == '__main__':
     for set in sets:
         pid = set.getAttribute("id")
         dir = getText(set.getElementsByTagName("title")[0].childNodes)
-        #dir = unicodedata.normalize('NFC', dir.decode("utf-8", "ignore")).encode('ASCII', 'ignore') # Normalize to ASCII
         dir = unistrip(dir)  # Normalize to ASCII, converting Unicode chars to '_'
+        # Trailing spaces are dirty
+        dir = dir.strip()
 
         # Build the list of photos
         url   = "http://api.flickr.com/services/rest/?method=flickr.photosets.getPhotos"
@@ -242,9 +266,15 @@ if __name__ == '__main__':
     url   = "http://api.flickr.com/services/rest/?method=flickr.photos.getNotInSet"
     urls.append( (url, "No Set") )
 
+    # Free the DOM memory
+    dom.unlink()
+
     # Add the user's Favourites
     url   = "http://api.flickr.com/services/rest/?method=flickr.favorites.getList"
     urls.append( (url, "Favourites") )
+
+    # TODO add the user's comments - potentially need a switch for this, as it's expensive
+    # flickr.activity.userComments
 
     # Time to get the photos
     inodes = {}
@@ -259,8 +289,8 @@ if __name__ == '__main__':
         url += "&per_page=500"
         pages = page = 1
 
-        # Get Date-Taken and Original-size URL for each result photo
-        url  += "&extras=date_taken,url_o,url_l,url_m"
+        # Get Date-Taken, Original-size URL, media type for each result photo
+        url  += "&extras=date_taken,url_o,url_l,url_m,media"
 
         while page <= pages: 
             request = url + "&page=" + str(page)
@@ -303,9 +333,17 @@ if __name__ == '__main__':
                 imgname = ""
                 if photo.getAttribute("title"):
                     imgname = "-" + photo.getAttribute("title")
+                
+                # this could be wrong
+                mediaType = "jpg"
+                if photo.getAttribute("media") == "video":
+                    mediaType = "mov" # and so could this
 
                 # Build the target filename
-                target = dir + "/" + taken + "-" + photoid + imgsz + imgname + ".jpg"
+                target = dir + "/" + taken + "-" + photoid + imgsz + imgname + "." + mediaType
+
+                # TODO set up sidecar
+                # write_sidecar(photoid, photo.getAttribute("secret"), dir)
 
                 # Skip files that exist
                 if os.access(target, os.R_OK):
