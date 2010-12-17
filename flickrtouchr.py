@@ -299,9 +299,13 @@ if __name__ == '__main__':
                 if imgurl == "":
                     imgurl = photo.getAttribute("url_m")
                     imgsz = '_m';
+                
+                imgname = ""
+                if photo.getAttribute("title"):
+                    imgname = "-" + photo.getAttribute("title")
 
                 # Build the target filename
-                target = dir + "/" + taken + "-" + photoid + imgsz + ".jpg"
+                target = dir + "/" + taken + "-" + photoid + imgsz + imgname + ".jpg"
 
                 # Skip files that exist
                 if os.access(target, os.R_OK):
