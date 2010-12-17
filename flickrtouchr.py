@@ -280,7 +280,7 @@ if __name__ == '__main__':
             # Grab the photos
             for photo in dom.getElementsByTagName("photo"):
                 # Tell the user we're grabbing the file
-                print photo.getAttribute("title").encode("utf8") + " ... in set ... " + dir
+                print repr(photo.getAttribute("title").encode("utf8")) + " ... in set ... " + dir
 
                 # Grab the id
                 photoid = photo.getAttribute("id")
