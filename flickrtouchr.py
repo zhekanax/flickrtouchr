@@ -340,7 +340,7 @@ if __name__ == '__main__':
                 
                 imgname = ""
                 if photo.getAttribute("title"):
-                    imgname = "-" + photo.getAttribute("title")
+                    imgname = "-" + photo.getAttribute("title").replace(os.sep, ":")
                 
                 # this could be wrong
                 mediaType = "jpg"
