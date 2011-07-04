@@ -18,6 +18,7 @@
 
 from hashlib import md5
 import xml.dom.minidom
+import unicodedata
 import webbrowser
 import urlparse
 import urllib2
@@ -322,6 +323,7 @@ if __name__ == '__main__':
 
                 # Grab the id
                 photoid = photo.getAttribute("id")
+                photoid = unicodedata.normalize('NFKD', photoid).encode('ascii','ignore')
 
                 # Grab the taken date
                 taken = photo.getAttribute("datetaken")
