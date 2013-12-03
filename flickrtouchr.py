@@ -7,11 +7,12 @@
 #
 #                You can then sync the photos to an iPod touch.
 #
-# Version:       1.2
+# Version:       1.2.1
 #
 # Original Author:	colm - AT - allcosts.net  - Colm MacCarthaigh - 2008-01-21
 #
-# Modified by:			Dan Benjamin - http://hivelogic.com										
+# Modified by:			Dan Benjamin - http://hivelogic.com
+# Modified by:          Eugeniy Belyaev - zhekanax@github
 #
 # License:       		Apache 2.0 - http://www.apache.org/licenses/LICENSE-2.0.html
 #
@@ -192,9 +193,7 @@ def unistrip(s):
 #
 # Get photo metadata from the server and save it in a "sidecar" file
 #
-def build_sidecar(photoid, photosecret, dir):
-    print "%s %s in %s" % (photoid, photosecret, dir)
-    
+def write_sidecar(filename, photoid, photosecret):
     # Get metadata (description, dates, etc) for this photo
     url = "http://api.flickr.com/services/rest/?method=flickr.photos.getInfo"
     
@@ -206,10 +205,11 @@ def build_sidecar(photoid, photosecret, dir):
     # Make the request
     response = urllib2.urlopen(request)
 
-    # Parse the XML
-    dom = xml.dom.minidom.parse(response)
-    
-    # ... and presumably get other information and write files
+    fh = open(filename, "w")
+    fh.write(response.read())
+    fh.close()
+
+    return filename
 
 
 ######## Main Application ##########
@@ -291,6 +291,7 @@ if __name__ == '__main__':
         # Create the directory
         try:
             os.makedirs(dir)
+            os.makedirs(dir + "/.metadata")
         except:
             pass
 
@@ -350,10 +351,9 @@ if __name__ == '__main__':
                     mediaType = "mov" # and so could this
 
                 # Build the target filename
-                target = dir + "/" + taken + "-" + photoid + imgsz + imgname + "." + mediaType
-
-                # TODO set up sidecar
-                # write_sidecar(photoid, photo.getAttribute("secret"), dir)
+                mediaName = taken + "-" + photoid + imgsz + imgname
+                target = dir + "/" + mediaName + "." + mediaType
+                targetMetadata = dir + "/.metadata/" + mediaName + ".xml"
 
                 # Skip files that exist
                 if os.access(target, os.R_OK):
@@ -368,6 +368,8 @@ if __name__ == '__main__':
                     # Grab image and save to local file
                     if imgurl:
                         inodes[photoid] = getphoto(imgurl, target)
+                        # Write metadata
+                        write_sidecar(targetMetadata, photoid, photo.getAttribute("secret"))
                     else:
                         print "Failed to find URL for photo id " + photoid
 
